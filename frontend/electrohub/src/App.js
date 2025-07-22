@@ -4,10 +4,12 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Shop from './components/Shop';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <Router>
+      <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />

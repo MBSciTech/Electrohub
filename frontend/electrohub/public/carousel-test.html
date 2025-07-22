@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carousel Image Test</title>
+  <style>
+    .carousel-container {
+      width: 80vw;
+      max-width: 600px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .carousel-image {
+      width: 100%;
+      max-height: 350px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .carousel-controls {
+      margin-top: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 0 8px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel-container">
+    <h2>Banner Image Carousel Test</h2>
+    <img id="carouselImg" class="carousel-image" src="/images/banners/b1.png" alt="Banner 1">
+    <div class="carousel-controls">
+      <button onclick="prevImage()">Previous</button>
+      <button onclick="nextImage()">Next</button>
+    </div>
+    <p id="imgName">b1.png</p>
+  </div>
+  <script>
+    const images = [
+      '/images/banners/b1.png',
+      '/images/banners/b2.png',
+      '/images/banners/b3.png',
+      '/images/banners/b4.png',
+    ];
+    let idx = 0;
+    const imgEl = document.getElementById('carouselImg');
+    const nameEl = document.getElementById('imgName');
+    function showImage(i) {
+      imgEl.src = images[i];
+      imgEl.alt = `Banner ${i+1}`;
+      nameEl.textContent = images[i].split('/').pop();
+    }
+    function prevImage() {
+      idx = (idx - 1 + images.length) % images.length;
+      showImage(idx);
+    }
+    function nextImage() {
+      idx = (idx + 1) % images.length;
+      showImage(idx);
+    }
+  </script>
+</body>
+</html> 
