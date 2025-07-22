@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 
 const HeroSection = () => (
   <section className="bg-light py-5" id="home">
@@ -6,7 +7,7 @@ const HeroSection = () => (
       <h1 className="display-4 fw-bold mb-3">Empowering the Future, One Circuit at a Time</h1>
       <p className="lead mb-4">A MERN-powered platform for electronics learners, makers, and innovators.</p>
       <div className="d-flex flex-column flex-sm-row justify-content-center gap-3 mb-4">
-        <a href="#signup" className="btn btn-primary btn-lg">Get Started</a>
+        <Link to="/signup" className="btn btn-primary btn-lg">Get Started</Link>
         <a href="#projects" className="btn btn-outline-primary btn-lg">Browse Projects</a>
       </div>
       {/* Optional illustration */}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from 'react-router-dom';
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -6,8 +7,9 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
@@ -18,7 +20,21 @@ const Signup = () => {
       return;
     }
     setError("");
-    alert(`Account created for ${name}`);
+    try {
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Signup failed.');
+      } else {
+        navigate('/login');
+      }
+    } catch (err) {
+      setError('Server error.');
+    }
   };
 
   return (
@@ -75,7 +91,7 @@ const Signup = () => {
         </form>
         <div className="mt-3 text-center">
           <span>Already have an account? </span>
-          <a href="#login">Login</a>
+          <Link to="/login">Login</Link>
         </div>
       </div>
     </div>

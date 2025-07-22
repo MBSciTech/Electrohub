@@ -1,19 +1,34 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder for authentication logic
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
     }
     setError("");
-    alert(`Logged in as ${email}`);
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Login failed.');
+      } else {
+        navigate('/shop');
+      }
+    } catch (err) {
+      setError('Server error.');
+    }
   };
 
   return (
@@ -48,7 +63,7 @@ const Login = () => {
         </form>
         <div className="mt-3 text-center">
           <span>Don't have an account? </span>
-          <a href="#signup">Sign Up</a>
+          <Link to="/signup">Sign Up</Link>
         </div>
       </div>
     </div>
