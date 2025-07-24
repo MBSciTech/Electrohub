@@ -1,28 +1,29 @@
-import React from 'react';
-
-const bannerImages = [
-  '/images/banners/b1.png',
-  '/images/banners/b2.png',
-  '/images/banners/b3.png',
-  '/images/banners/b4.png',
-];
-
-const products = [
-  { name: 'Smartphone X1', price: '₹29,999', img: '/images/products/phones/p1.webp' },
-  { name: 'Wireless Headphones', price: '₹3,499', img: '/images/products/headphones/h1.webp' },
-  { name: 'Smartwatch Pro', price: '₹7,999', img: '/images/products/smartwatch/s1.webp' },
-  { name: 'Bluetooth Speaker', price: '₹2,199', img: '/images/products/bluetoothSpeaker/b1.webp' },
-];
+import React, { useEffect, useState } from 'react';
 
 const Shop = () => {
+  const [products, setProducts] = useState([]);
+  const [banners, setBanners] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => setProducts(data));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/banners')
+      .then(res => res.json())
+      .then(data => setBanners(data));
+  }, []);
+
   return (
     <div className="container mt-5">
       {/* Carousel */}
       <div id="shopCarousel" className="carousel slide mb-4" data-bs-ride="carousel">
         <div className="carousel-inner">
-          {bannerImages.map((src, idx) => (
-            <div className={`carousel-item${idx === 0 ? ' active' : ''}`} key={src}>
-              <img src={src} className="d-block w-100" alt={`Banner ${idx + 1}`} style={{maxHeight: '350px', objectFit: 'cover'}} />
+          {banners.map((banner, idx) => (
+            <div className={`carousel-item${idx === 0 ? ' active' : ''}`} key={banner._id}>
+              <img src={banner.image} className="d-block w-100" alt={banner.name} style={{maxHeight: '350px', objectFit: 'cover'}} />
             </div>
           ))}
         </div>
@@ -41,7 +42,7 @@ const Shop = () => {
         {products.map((product, idx) => (
           <div className="col-12 col-sm-6 col-md-3" key={idx}>
             <div className="card h-100 shadow-sm">
-              <img src={product.img} className="card-img-top" alt={product.name} style={{height: '180px', objectFit: 'cover'}} />
+              <img src={product.image} className="card-img-top" alt={product.name} style={{height: '180px', objectFit: 'cover'}} />
               <div className="card-body d-flex flex-column">
                 <h5 className="card-title">{product.name}</h5>
                 <p className="card-text fw-bold text-success mb-2">{product.price}</p>
