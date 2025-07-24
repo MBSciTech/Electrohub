@@ -8,10 +8,10 @@ const bannerImages = [
 ];
 
 const products = [
-  { name: 'Smartphone X1', price: '₹29,999', img: '/images/banners/b1.png' },
-  { name: 'Wireless Headphones', price: '₹3,499', img: '/images/banners/b2.png' },
-  { name: 'Smartwatch Pro', price: '₹7,999', img: '/images/banners/b3.png' },
-  { name: 'Bluetooth Speaker', price: '₹2,199', img: '/images/banners/b4.png' },
+  { name: 'Smartphone X1', price: '₹29,999', img: '/images/products/phones/p1.webp' },
+  { name: 'Wireless Headphones', price: '₹3,499', img: '/images/products/headphones/h1.webp' },
+  { name: 'Smartwatch Pro', price: '₹7,999', img: '/images/products/smartwatch/s1.webp' },
+  { name: 'Bluetooth Speaker', price: '₹2,199', img: '/images/products/bluetoothSpeaker/b1.webp' },
 ];
 
 const Shop = () => {
