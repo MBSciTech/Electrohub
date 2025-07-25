@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
@@ -17,13 +18,25 @@ const Shop = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
-      {/* Carousel */}
-      <div id="shopCarousel" className="carousel slide mb-4" data-bs-ride="carousel">
+    <div className="container my-5">
+      {/* Hero Carousel */}
+      <div
+        id="shopCarousel"
+        className="carousel slide mb-5 rounded overflow-hidden shadow"
+        data-bs-ride="carousel"
+      >
         <div className="carousel-inner">
           {banners.map((banner, idx) => (
             <div className={`carousel-item${idx === 0 ? ' active' : ''}`} key={banner._id}>
-              <img src={banner.image} className="d-block w-100" alt={banner.name} style={{maxHeight: '350px', objectFit: 'cover'}} />
+              <div className="position-relative">
+                <img
+                  src={banner.image}
+                  className="d-block w-100"
+                  alt={banner.name}
+                  style={{ maxHeight: '400px', objectFit: 'cover' }}
+                />
+                
+              </div>
             </div>
           ))}
         </div>
@@ -36,24 +49,48 @@ const Shop = () => {
           <span className="visually-hidden">Next</span>
         </button>
       </div>
-      <h2 className="mb-4 text-center text-primary">Welcome to the ElectroHub Shop!</h2>
-      <p className="lead text-center mb-5">Discover the latest and greatest in electronics, handpicked for tech enthusiasts. Shop smartphones, wearables, audio, and more!</p>
+
+      {/* Products Grid */}
       <div className="row g-4">
         {products.map((product, idx) => (
-          <div className="col-12 col-sm-6 col-md-3" key={idx}>
-            <div className="card h-100 shadow-sm">
-              <img src={product.image} className="card-img-top" alt={product.name} style={{height: '180px', objectFit: 'cover'}} />
+          <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={idx}>
+            <div style={{ boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.18)' }} className="card h-100 border-0">
+              <img
+                src={product.image}
+                className="card-img-top bg-white"
+                alt={product.name}
+                style={{
+                  height: '200px',
+                  objectFit: 'contain',
+                  padding: '10px',
+                }}
+              />
               <div className="card-body d-flex flex-column">
-                <h5 className="card-title">{product.name}</h5>
-                <p className="card-text fw-bold text-success mb-2">{product.price}</p>
-                <button className="btn btn-primary mt-auto" disabled>Add to Cart</button>
+                <h5 className="card-title mb-1">{product.name}</h5>
+                {product.category && (
+                  <span className="badge bg-secondary mb-2" style={{ width: 'fit-content' }}>
+                    {product.category}
+                  </span>
+                )}
+                <p className="text-success fw-bold mb-1">₹{product.price}</p>
+                <p className="card-text text-muted small">
+                  {product.description?.slice(0, 60)}...
+                </p>
+                <button className="btn btn-outline-primary mt-auto">Add to Cart</button>
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Empty State */}
+      {products.length === 0 && (
+        <div className="text-center mt-5">
+          <h4 className="text-muted">No products available.</h4>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Shop; 
+export default Shop;

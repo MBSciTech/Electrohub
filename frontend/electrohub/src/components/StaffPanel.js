@@ -6,6 +6,7 @@ const StaffPanel = () => {
     branch: '',
     price: '',
     description: '',
+    category: '',
     imageFile: null,
   });
   const [status, setStatus] = useState('');
@@ -25,6 +26,7 @@ const StaffPanel = () => {
       setStatus('Please select an image.');
       return;
     }
+
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result.split(',')[1];
@@ -34,6 +36,7 @@ const StaffPanel = () => {
         branch: form.branch,
         price: form.price,
         description: form.description,
+        category: form.category,
         imageBase64: base64String,
         imageType,
       };
@@ -45,7 +48,14 @@ const StaffPanel = () => {
         });
         if (res.ok) {
           setStatus('Product added successfully!');
-          setForm({ name: '', branch: '', price: '', description: '', imageFile: null });
+          setForm({
+            name: '',
+            branch: '',
+            price: '',
+            description: '',
+            category: '',
+            imageFile: null,
+          });
         } else {
           setStatus('Failed to add product.');
         }
@@ -69,6 +79,10 @@ const StaffPanel = () => {
           <input type="text" className="form-control" name="branch" value={form.branch} onChange={handleChange} required />
         </div>
         <div className="mb-3">
+          <label className="form-label">Category</label>
+          <input type="text" className="form-control" name="category" value={form.category} onChange={handleChange} required />
+        </div>
+        <div className="mb-3">
           <label className="form-label">Price</label>
           <input type="text" className="form-control" name="price" value={form.price} onChange={handleChange} required />
         </div>
@@ -87,4 +101,4 @@ const StaffPanel = () => {
   );
 };
 
-export default StaffPanel; 
+export default StaffPanel;
