@@ -58,11 +58,11 @@ app.post('/api/login', async (req, res) => {
 // Add product (with image as base64)
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, price, branch, description, imageBase64, imageType } = req.body;
+    const { name, price, brand, description, imageBase64, imageType } = req.body;
     const product = new Product({
       name,
       price,
-      branch,
+      brand,
       description,
       image: {
         data: Buffer.from(imageBase64, 'base64'),
@@ -84,7 +84,7 @@ app.get('/api/products', async (req, res) => {
       _id: p._id,
       name: p.name,
       price: p.price,
-      branch: p.branch,
+      brand: p.brand,
       description: p.description,
       image: p.image.data ? `data:${p.image.contentType};base64,${p.image.data.toString('base64')}` : null
     }));
@@ -113,3 +113,29 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 }); 
+
+// Get product by ID
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const productWithBase64 = {
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      brand: product.brand,
+      description: product.description,
+      image: product.image.data
+        ? `data:${product.image.contentType};base64,${product.image.data.toString('base64')}`
+        : null
+    };
+
+    res.json(productWithBase64);
+  } catch (err) {
+    console.error('❌ Failed to fetch product by ID:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});

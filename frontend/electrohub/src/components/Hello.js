@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./Navbar";
+// import Navbar from "./Navbar";
 import HeroSection from "./HeroSection";
 import FeaturesSection from "./FeaturesSection";
 import HowItWorksSection from "./HowItWorksSection";
@@ -10,7 +10,6 @@ import Footer from "./Footer";
 function Hello() {
   return (
     <>
-      <Navbar />
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />

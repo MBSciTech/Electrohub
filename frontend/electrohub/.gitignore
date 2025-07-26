@@ -24,3 +24,4 @@ yarn-error.log*
 
 #public/images
 public/images/products
+public/images/banners

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const StaffPanel = () => {
   const [form, setForm] = useState({
     name: '',
-    branch: '',
+    brand: '',
     price: '',
     description: '',
     category: '',
@@ -33,7 +33,7 @@ const StaffPanel = () => {
       const imageType = form.imageFile.type;
       const payload = {
         name: form.name,
-        branch: form.branch,
+        brand: form.brand,
         price: form.price,
         description: form.description,
         category: form.category,
@@ -50,7 +50,7 @@ const StaffPanel = () => {
           setStatus('Product added successfully!');
           setForm({
             name: '',
-            branch: '',
+            brand: '',
             price: '',
             description: '',
             category: '',
@@ -75,8 +75,8 @@ const StaffPanel = () => {
           <input type="text" className="form-control" name="name" value={form.name} onChange={handleChange} required />
         </div>
         <div className="mb-3">
-          <label className="form-label">Branch</label>
-          <input type="text" className="form-control" name="branch" value={form.branch} onChange={handleChange} required />
+          <label className="form-label">Brand</label>
+          <input type="text" className="form-control" name="brand" value={form.brand} onChange={handleChange} required />
         </div>
         <div className="mb-3">
           <label className="form-label">Category</label>
