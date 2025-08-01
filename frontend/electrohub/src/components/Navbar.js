@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from 'react-router-dom';
+import { FaShoppingCart } from 'react-icons/fa'; // FontAwesome cart icon
 
-const Navbar = () => (
+const Navbar = ({ cartCount = 0 }) => (
   <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div className="container">
       <Link className="navbar-brand fw-bold text-primary" to="/">
@@ -30,10 +31,20 @@ const Navbar = () => (
           <li className="nav-item">
             <Link className="nav-link" to="/login">Login / Sign Up</Link>
           </li>
+          <li className="nav-item position-relative">
+            <Link className="nav-link" to="/cart">
+              <FaShoppingCart size={20} />
+              {cartCount > 0 && (
+                <span className="position-absolute top-10 start-100 translate-middle badge rounded-pill bg-danger">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 );
 
-export default Navbar; 
+export default Navbar;

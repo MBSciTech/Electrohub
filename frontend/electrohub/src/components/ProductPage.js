@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Footer from "./Footer";
 
 const ProductPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState("");
+  console.log(product);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -29,7 +31,7 @@ const ProductPage = () => {
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id]); 
 
   if (error) {
     return <div style={{ color: "red", textAlign: "center", marginTop: "2rem" }}>{error}</div>;
@@ -40,6 +42,7 @@ const ProductPage = () => {
   }
 
   return (
+    <>
     <div style={styles.page}>
       <div style={styles.card}>
         <img src={product.image} alt={product.name} style={styles.image} />
@@ -47,12 +50,31 @@ const ProductPage = () => {
           <h2 style={styles.title}>{product.name}</h2>
           <p style={styles.price}>₹{product.price}</p>
           <p style={styles.description}>{product.description}</p>
-          <button style={styles.button}>Add to Cart</button>
-          <br/>
-          <button style={styles.button}>Buy now</button>
+
+          {/* New Fields */}
+          <p style={styles.info}><strong>Rating:</strong> ⭐ {product.rating || "N/A"}</p>
+          <p style={styles.info}><strong>Stock:</strong> {product.stock ?? "Unknown"} units available</p>
+
+          {product.specs && product.specs.length > 0 && (
+            <div style={styles.specs}>
+              <strong>Specifications:</strong>
+              <ul style={styles.specList}>
+                {product.specs.map((spec, idx) => (
+                  <li key={idx}>{spec}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <button style={styles.buttonCart}>Add to Cart</button>
+          <br />
+          <button style={styles.buttonBuy}>Buy now</button>
         </div>
       </div>
+      
     </div>
+    <Footer/>
+    </>
   );
 };
 
@@ -101,17 +123,41 @@ const styles = {
     color: "#27ae60",
   },
   description: {
-    marginBottom: "20px",
+    marginBottom: "15px",
     color: "#666",
     fontSize: "1rem",
     lineHeight: "1.6",
   },
-  button: {
+  info: {
+    fontSize: "1rem",
+    marginBottom: "10px",
+    color: "#444",
+  },
+  specs: {
+    marginBottom: "20px",
+  },
+  specList: {
+    paddingLeft: "20px",
+    color: "#444",
+    fontSize: "0.95rem",
+  },
+  buttonCart: {
     padding: "12px 20px",
     fontSize: "1rem",
     backgroundColor: "#007bff",
     color: "#fff",
     border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+    marginBottom: "10px",
+  },
+  buttonBuy: {
+    padding: "12px 20px",
+    fontSize: "1rem",
+    backgroundColor: "transparent",
+    color: "#007bff",
+    border: "1px solid #007bff",
     borderRadius: "6px",
     cursor: "pointer",
     transition: "background-color 0.3s ease",

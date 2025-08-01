@@ -58,23 +58,42 @@ app.post('/api/login', async (req, res) => {
 // Add product (with image as base64)
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, price, brand, description, imageBase64, imageType } = req.body;
+    const {
+      name,
+      price,
+      brand,
+      description,
+      category,
+      rating,
+      stock,
+      specs,
+      imageBase64,
+      imageType
+    } = req.body;
+
     const product = new Product({
       name,
       price,
       brand,
       description,
+      category,
+      rating,
+      stock,
+      specs,
       image: {
         data: Buffer.from(imageBase64, 'base64'),
         contentType: imageType
       }
     });
+
     await product.save();
     res.status(201).json({ message: 'Product created successfully.' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error.' });
   }
 });
+
 
 // Get all products (return image as base64 string)
 app.get('/api/products', async (req, res) => {
@@ -94,20 +113,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// Get all banners (return image as base64 string)
-app.get('/api/banners', async (req, res) => {
-  try {
-    const banners = await Banner.find();
-    const bannersWithBase64 = banners.map(b => ({
-      _id: b._id,
-      name: b.name,
-      image: b.image.data ? `data:${b.image.contentType};base64,${b.image.data.toString('base64')}` : null
-    }));
-    res.json(bannersWithBase64);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error.' });
-  }
-});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
@@ -128,7 +134,11 @@ app.get('/api/products/:id', async (req, res) => {
       price: product.price,
       brand: product.brand,
       description: product.description,
-      image: product.image.data
+      category: product.category,
+      rating: product.rating,
+      stock: product.stock,
+      specs: product.specs,
+      image: product.image?.data
         ? `data:${product.image.contentType};base64,${product.image.data.toString('base64')}`
         : null
     };
@@ -139,3 +149,73 @@ app.get('/api/products/:id', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Apply discount to brand or category
+app.post('/api/discounts', async (req, res) => {
+  const { type, value, discount } = req.body;
+
+  if (!['brand', 'category'].includes(type) || !value || !discount) {
+    return res.status(400).json({ error: 'Invalid discount data.' });
+  }
+
+  try {
+    const filter = { [type]: value };
+    const update = { $set: { discount: parseFloat(discount) } };
+
+    const result = await Product.updateMany(filter, update);
+    res.status(200).json({ message: `Discount applied to ${result.modifiedCount} product(s).` });
+  } catch (err) {
+    console.error('❌ Discount error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Search products by name
+app.get('/api/products/search', async (req, res) => {
+  const query = req.query.q;
+  if (!query) return res.status(400).json({ error: 'Missing query.' });
+
+  try {
+    const results = await Product.find({
+      name: { $regex: query, $options: 'i' }
+    });
+
+    const formatted = results.map(p => ({
+      _id: p._id,
+      name: p.name,
+      price: p.price,
+      brand: p.brand,
+      category: p.category,
+      image: p.image?.data
+        ? `data:${p.image.contentType};base64,${p.image.data.toString('base64')}`
+        : null
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error('❌ Search error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Upload a banner (POST /api/banners)
+// Get all banners (GET /api/banners)
+app.get('/api/banners', async (req, res) => {
+  try {
+    const banners = await Banner.find();
+
+    const bannersWithBase64 = banners.map(b => ({
+      _id: b._id,
+      name: b.name,
+      image: b.image?.data
+        ? `data:${b.image.contentType};base64,${b.image.data.toString('base64')}`
+        : null
+    }));
+
+    res.json(bannersWithBase64);
+  } catch (err) {
+    console.error('❌ Error fetching banners:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
