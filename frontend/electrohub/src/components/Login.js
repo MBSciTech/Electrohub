@@ -15,7 +15,7 @@ const Login = () => {
     }
     setError("");
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -24,6 +24,12 @@ const Login = () => {
       if (!response.ok) {
         setError(data.error || 'Login failed.');
       } else {
+        // Store user information in localStorage
+        localStorage.setItem('email', email);
+        localStorage.setItem('userName', data.user.name);
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // Navigate to shop page
         navigate('/shop');
       }
     } catch (err) {

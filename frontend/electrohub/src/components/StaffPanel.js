@@ -10,11 +10,15 @@ const StaffPanel = () => {
 
   const [bannerForm, setBannerForm] = useState({ name: '', imageFile: null });
   const [discountForm, setDiscountForm] = useState({ type: 'brand', value: '', discount: '' });
+  const [couponForm, setCouponForm] = useState({
+    name: '', discount: '', expiryDate: '', userName: ''
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState(null);
   const [status, setStatus] = useState('');
 
-  // =================== PRODUCT ===================
+  // ========== PRODUCT ==========
   const handleProductChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'imageFile') {
@@ -46,7 +50,9 @@ const StaffPanel = () => {
           body: JSON.stringify(payload)
         });
         setStatus(res.ok ? '✅ Product added!' : '❌ Failed to add product.');
-        if (res.ok) setProductForm({ name: '', brand: '', price: '', description: '', category: '', rating: '', stock: '', specs: '', imageFile: null });
+        if (res.ok) {
+          setProductForm({ name: '', brand: '', price: '', description: '', category: '', rating: '', stock: '', specs: '', imageFile: null });
+        }
       } catch {
         setStatus('❌ Server error.');
       }
@@ -54,7 +60,7 @@ const StaffPanel = () => {
     reader.readAsDataURL(productForm.imageFile);
   };
 
-  // =================== BANNER ===================
+  // ========== BANNER ==========
   const handleBannerChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'imageFile') {
@@ -91,7 +97,7 @@ const StaffPanel = () => {
     reader.readAsDataURL(bannerForm.imageFile);
   };
 
-  // =================== DISCOUNT ===================
+  // ========== DISCOUNT ==========
   const handleDiscountSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -106,7 +112,58 @@ const StaffPanel = () => {
     }
   };
 
-  // =================== SEARCH ===================
+  // ========== COUPON ==========
+  const handleCouponSubmit = async (e) => {
+    e.preventDefault();
+  
+    const { name, discount, expiryDate, userName } = couponForm;
+  
+    // Frontend check for empty fields
+    if (!name.trim() || discount === '' || !expiryDate || !userName.trim()) {
+      return setStatus('❌ All fields are required.');
+    }
+  
+    const parsedDiscount = parseFloat(discount);
+    if (isNaN(parsedDiscount) || parsedDiscount <= 0 || parsedDiscount > 100) {
+      return setStatus('❌ Discount must be a number between 1 and 100.');
+    }
+  
+    // Format expiry date properly
+    const formattedDate = new Date(expiryDate);
+    if (isNaN(formattedDate.getTime())) {
+      return setStatus('❌ Invalid expiry date.');
+    }
+  
+    const payload = {
+      name: name.trim(),
+      discount: parsedDiscount,
+      expiryDate: expiryDate, // Send the original date string from the input
+      userEmail: userName.trim() // Changed from userName to userEmail to match backend
+    };
+  
+    try {
+      const res = await fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        console.error('Coupon creation failed:', data);
+        return setStatus(`❌ ${data.error || data.message || 'Failed to create coupon.'}`);
+      }
+  
+      setStatus(`✅ Coupon created! Code: ${data.code}`);
+      setCouponForm({ name: '', discount: '', expiryDate: '', userName: '' });
+    } catch (error) {
+      console.error('Coupon creation error:', error);
+      setStatus('❌ Server error.');
+    }
+  };
+  
+  // ========== SEARCH ==========
   const handleSearch = async () => {
     try {
       const res = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}`);
@@ -117,21 +174,21 @@ const StaffPanel = () => {
     }
   };
 
-  // =================== TAB RENDER ===================
+  // ========== RENDER TABS ==========
   const renderTab = () => {
     switch (activeTab) {
       case 'product':
         return (
           <form onSubmit={handleProductSubmit} className="card p-4 shadow-sm">
             <h4>Add Product</h4>
-            <input className="form-control mb-2" type="text" name="name" placeholder="Name" value={productForm.name} onChange={handleProductChange} required />
-            <input className="form-control mb-2" type="text" name="brand" placeholder="Brand" value={productForm.brand} onChange={handleProductChange} required />
-            <input className="form-control mb-2" type="text" name="category" placeholder="Category" value={productForm.category} onChange={handleProductChange} required />
-            <input className="form-control mb-2" type="number" name="price" placeholder="Price (₹)" value={productForm.price} onChange={handleProductChange} required />
-            <input className="form-control mb-2" type="number" step="0.1" name="rating" placeholder="Rating" value={productForm.rating} onChange={handleProductChange} required />
-            <input className="form-control mb-2" type="number" name="stock" placeholder="Stock" value={productForm.stock} onChange={handleProductChange} required />
-            <input className="form-control mb-2" type="text" name="specs" placeholder="Specifications (comma-separated)" value={productForm.specs} onChange={handleProductChange} required />
-            <textarea className="form-control mb-2" name="description" placeholder="Description" value={productForm.description} onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="name" value={productForm.name} placeholder="Name" onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="brand" value={productForm.brand} placeholder="Brand" onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="category" value={productForm.category} placeholder="Category" onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="price" type="number" value={productForm.price} placeholder="Price" onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="rating" type="number" value={productForm.rating} placeholder="Rating" onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="stock" type="number" value={productForm.stock} placeholder="Stock" onChange={handleProductChange} required />
+            <input className="form-control mb-2" name="specs" value={productForm.specs} placeholder="Specifications (comma-separated)" onChange={handleProductChange} required />
+            <textarea className="form-control mb-2" name="description" value={productForm.description} placeholder="Description" onChange={handleProductChange} required />
             <input className="form-control mb-3" type="file" name="imageFile" accept="image/*" onChange={handleProductChange} required />
             <button className="btn btn-primary">Add Product</button>
           </form>
@@ -141,7 +198,7 @@ const StaffPanel = () => {
         return (
           <form onSubmit={handleBannerSubmit} className="card p-4 shadow-sm">
             <h4>Upload Banner</h4>
-            <input className="form-control mb-2" type="text" name="name" placeholder="Banner Name" value={bannerForm.name} onChange={handleBannerChange} required />
+            <input className="form-control mb-2" name="name" value={bannerForm.name} placeholder="Banner Name" onChange={handleBannerChange} required />
             <input className="form-control mb-3" type="file" name="imageFile" accept="image/*" onChange={handleBannerChange} required />
             <button className="btn btn-primary">Upload Banner</button>
           </form>
@@ -158,6 +215,18 @@ const StaffPanel = () => {
             <input className="form-control mb-2" placeholder={discountForm.type} value={discountForm.value} onChange={(e) => setDiscountForm({ ...discountForm, value: e.target.value })} required />
             <input className="form-control mb-3" type="number" placeholder="Discount (%)" value={discountForm.discount} onChange={(e) => setDiscountForm({ ...discountForm, discount: e.target.value })} required />
             <button className="btn btn-primary">Apply Discount</button>
+          </form>
+        );
+
+      case 'coupon':
+        return (
+          <form onSubmit={handleCouponSubmit} className="card p-4 shadow-sm">
+            <h4>Create Coupon</h4>
+            <input className="form-control mb-2" name="name" value={couponForm.name} placeholder="Coupon Name" onChange={(e) => setCouponForm({ ...couponForm, name: e.target.value })} required />
+            <input className="form-control mb-2" name="discount" type="number" min="1" max="100" value={couponForm.discount} placeholder="Discount (%)" onChange={(e) => setCouponForm({ ...couponForm, discount: e.target.value })} required />
+            <input className="form-control mb-2" name="expiryDate" type="date" value={couponForm.expiryDate} onChange={(e) => setCouponForm({ ...couponForm, expiryDate: e.target.value })} required />
+            <input className="form-control mb-3" name="userName" value={couponForm.userName} placeholder="User Email or Name" onChange={(e) => setCouponForm({ ...couponForm, userName: e.target.value })} required />
+            <button className="btn btn-primary">Create Coupon</button>
           </form>
         );
 
@@ -185,7 +254,7 @@ const StaffPanel = () => {
     <div className="container my-5">
       <h2 className="mb-4">🛠 Staff Panel</h2>
       <ul className="nav nav-tabs mb-4">
-        {['product', 'banner', 'discount', 'search'].map(tab => (
+        {['product', 'banner', 'discount', 'coupon', 'search'].map(tab => (
           <li className="nav-item" key={tab}>
             <button className={`nav-link${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -195,7 +264,6 @@ const StaffPanel = () => {
       </ul>
 
       {renderTab()}
-
       {status && <div className="alert alert-info mt-4">{status}</div>}
     </div>
   );

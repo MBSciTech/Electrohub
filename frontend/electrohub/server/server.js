@@ -4,6 +4,8 @@ const cors = require('cors');
 const User = require('./models/User');
 const Product = require('./models/Product');
 const Banner = require('./models/Banner');
+const Offer = require('./models/Offers');
+
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -219,3 +221,45 @@ app.get('/api/banners', async (req, res) => {
   }
 });
 
+
+// POST /api/coupons
+app.post('/api/coupons', async (req, res) => {
+  try {
+    const { name, discount, expiryDate, userEmail } = req.body;
+
+    if (!name || !discount || !expiryDate || !userEmail) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    const code = name.slice(0, 3).toUpperCase() + Math.floor(100 + Math.random() * 900);
+
+    const offer = new Offer({
+      name,
+      discount: parseFloat(discount),
+      expiryDate: new Date(expiryDate),
+      userEmail,
+      code,
+      isUsed: false
+    });
+
+    await offer.save();
+    res.status(201).json({ message: 'Coupon created', code });
+  } catch (err) {
+    res.status(500).json({ error: 'Error creating coupon' });
+  }
+});
+
+// GET /api/users/:email/coupons
+app.get('/api/users/:email/coupons', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const coupons = await Offer.find({
+      userEmail: email,
+      isUsed: false,
+      expiryDate: { $gte: new Date() }
+    });
+    res.json(coupons);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch coupons' });
+  }
+});
