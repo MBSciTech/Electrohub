@@ -201,7 +201,6 @@ app.get('/api/products/search', async (req, res) => {
   }
 });
 
-// Upload a banner (POST /api/banners)
 // Get all banners (GET /api/banners)
 app.get('/api/banners', async (req, res) => {
   try {
@@ -222,6 +221,42 @@ app.get('/api/banners', async (req, res) => {
   }
 });
 
+// Upload a banner (POST /api/banners)
+app.post('/api/banners', async (req, res) => {
+  try {
+    const { name, imageBase64, imageType } = req.body;
+
+    if (!name || !imageBase64 || !imageType) {
+      return res.status(400).json({ error: 'Name and image are required.' });
+    }
+
+    const banner = new Banner({
+      name,
+      image: {
+        data: Buffer.from(imageBase64, 'base64'),
+        contentType: imageType
+      }
+    });
+
+    await banner.save();
+    res.status(201).json({ message: 'Banner uploaded successfully.' });
+  } catch (err) {
+    console.error('❌ Error uploading banner:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// GET /api/coupons - Get all coupons (for staff panel)
+app.get('/api/coupons', async (req, res) => {
+  try {
+    const coupons = await Offer.find().sort({ expiryDate: -1 });
+    res.json(coupons);
+  } catch (err) {
+    console.error('❌ Error fetching coupons:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // POST /api/coupons
 app.post('/api/coupons', async (req, res) => {

@@ -25,6 +25,8 @@ const StaffPanel = () => {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -85,6 +87,31 @@ const StaffPanel = () => {
       console.error('Error fetching orders:', error);
       setOrders([]);
     }
+  };
+
+  const handleOrderStatusUpdate = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        setStatus('✅ Order status updated successfully!');
+        fetchOrders(); // Refresh orders
+      } else {
+        setStatus('❌ Failed to update order status.');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      setStatus('❌ Server error occurred.');
+    }
+  };
+
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
   };
 
   // ========== PRODUCT ==========
@@ -188,15 +215,41 @@ const StaffPanel = () => {
     e.preventDefault();
     setLoading(true);
     
+    // Validation
+    if (!discountForm.value.trim() || !discountForm.discount) {
+      setStatus('❌ Please fill in all fields.');
+      setLoading(false);
+      return;
+    }
+
+    const discountValue = parseFloat(discountForm.discount);
+    if (isNaN(discountValue) || discountValue <= 0 || discountValue > 100) {
+      setStatus('❌ Discount must be a number between 1 and 100.');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await fetch('/api/discounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(discountForm)
+        body: JSON.stringify({
+          type: discountForm.type,
+          value: discountForm.value.trim(),
+          discount: discountValue
+        })
       });
-      setStatus(res.ok ? '✅ Discount applied successfully!' : '❌ Failed to apply discount.');
-      if (res.ok) setDiscountForm({ type: 'brand', value: '', discount: '' });
-    } catch {
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setStatus(`✅ Discount applied successfully! ${data.message}`);
+        setDiscountForm({ type: 'brand', value: '', discount: '' });
+      } else {
+        setStatus(`❌ ${data.error || 'Failed to apply discount.'}`);
+      }
+    } catch (error) {
+      console.error('Discount error:', error);
       setStatus('❌ Server error occurred.');
     } finally {
       setLoading(false);
@@ -272,11 +325,21 @@ const StaffPanel = () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}`);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        setStatus(`❌ ${errorData.error || 'Failed to search products.'}`);
+        setSearchResult([]);
+        return;
+      }
+      
       const data = await res.json();
       setSearchResult(data);
       setStatus(data.length > 0 ? `✅ Found ${data.length} product(s)` : '❌ No products found');
-    } catch {
-      setStatus('❌ Failed to search products.');
+    } catch (error) {
+      console.error('Search error:', error);
+      setStatus('❌ Failed to search products. Please try again.');
+      setSearchResult([]);
     } finally {
       setLoading(false);
     }
@@ -432,7 +495,9 @@ const StaffPanel = () => {
                       <option value="">Select Category</option>
                       <option value="Electronics">Electronics</option>
                       <option value="Computers">Computers</option>
-                      <option value="Mobile">Mobile</option>
+                      <option value="Laptop">Laptop</option>
+                      <option value="Phone">Phone</option>
+                      <option value="Mouse">Mouse</option>
                       <option value="Accessories">Accessories</option>
                       <option value="Gaming">Gaming</option>
                     </select>
@@ -834,15 +899,33 @@ const StaffPanel = () => {
                               <button 
                                 className="btn btn-sm btn-outline-primary me-1"
                                 title="View Details"
+                                onClick={() => handleViewOrder(order)}
                               >
                                 <i className="bi bi-eye"></i>
                               </button>
-                              <button 
-                                className="btn btn-sm btn-outline-success me-1"
-                                title="Update Status"
-                              >
-                                <i className="bi bi-pencil"></i>
-                              </button>
+                              <div className="btn-group" role="group">
+                                <button 
+                                  className="btn btn-sm btn-outline-success"
+                                  title="Update Status"
+                                  onClick={() => handleOrderStatusUpdate(order.id, 'Processing')}
+                                >
+                                  Process
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-outline-info"
+                                  title="Mark Shipped"
+                                  onClick={() => handleOrderStatusUpdate(order.id, 'Shipped')}
+                                >
+                                  Ship
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-outline-success"
+                                  title="Mark Delivered"
+                                  onClick={() => handleOrderStatusUpdate(order.id, 'Delivered')}
+                                >
+                                  Deliver
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -986,6 +1069,137 @@ const StaffPanel = () => {
         <div className={`alert ${status.includes('✅') ? 'alert-success' : status.includes('❌') ? 'alert-danger' : 'alert-info'} mt-4`}>
           <i className={`bi ${status.includes('✅') ? 'bi-check-circle' : status.includes('❌') ? 'bi-exclamation-triangle' : 'bi-info-circle'} me-2`}></i>
           {status}
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  <i className="bi bi-cart-check me-2"></i>
+                  Order Details - {selectedOrder.id}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowOrderModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="row">
+                  <div className="col-md-6">
+                    <h6>Customer Information</h6>
+                    <p><strong>Name:</strong> {selectedOrder.userName}</p>
+                    <p><strong>Email:</strong> {selectedOrder.userEmail}</p>
+                    <p><strong>Order Date:</strong> {new Date(selectedOrder.orderDate).toLocaleString()}</p>
+                    <p><strong>Status:</strong> 
+                      <span className={`badge ms-2 ${
+                        selectedOrder.status === 'Processing' ? 'bg-warning' :
+                        selectedOrder.status === 'Shipped' ? 'bg-info' :
+                        selectedOrder.status === 'Delivered' ? 'bg-success' :
+                        'bg-danger'
+                      }`}>
+                        {selectedOrder.status}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="col-md-6">
+                    <h6>Shipping Information</h6>
+                    <p><strong>Address:</strong></p>
+                    <p className="text-muted">{selectedOrder.shippingAddress}</p>
+                    <p><strong>Payment Method:</strong> {selectedOrder.paymentMethod}</p>
+                  </div>
+                </div>
+                
+                <hr />
+                
+                <h6>Order Items</h6>
+                <div className="table-responsive">
+                  <table className="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedOrder.items.map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.name}</td>
+                          <td>₹{item.price}</td>
+                          <td>{item.quantity}</td>
+                          <td>₹{(item.price * item.quantity).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colSpan="3" className="text-end"><strong>Subtotal:</strong></td>
+                        <td>₹{(selectedOrder.total / (1 - selectedOrder.discount / 100)).toFixed(2)}</td>
+                      </tr>
+                      {selectedOrder.discount > 0 && (
+                        <tr>
+                          <td colSpan="3" className="text-end"><strong>Discount ({selectedOrder.discount}%):</strong></td>
+                          <td className="text-success">-₹{((selectedOrder.total / (1 - selectedOrder.discount / 100)) * selectedOrder.discount / 100).toFixed(2)}</td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td colSpan="3" className="text-end"><strong>Total:</strong></td>
+                        <td><strong>₹{selectedOrder.total.toFixed(2)}</strong></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowOrderModal(false)}
+                >
+                  Close
+                </button>
+                <div className="btn-group">
+                  <button 
+                    type="button" 
+                    className="btn btn-warning"
+                    onClick={() => {
+                      handleOrderStatusUpdate(selectedOrder.id, 'Processing');
+                      setShowOrderModal(false);
+                    }}
+                  >
+                    Mark Processing
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-info"
+                    onClick={() => {
+                      handleOrderStatusUpdate(selectedOrder.id, 'Shipped');
+                      setShowOrderModal(false);
+                    }}
+                  >
+                    Mark Shipped
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-success"
+                    onClick={() => {
+                      handleOrderStatusUpdate(selectedOrder.id, 'Delivered');
+                      setShowOrderModal(false);
+                    }}
+                  >
+                    Mark Delivered
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show"></div>
         </div>
       )}
     </div>
