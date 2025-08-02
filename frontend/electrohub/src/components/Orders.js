@@ -24,10 +24,24 @@ const Orders = () => {
     setUserEmail(email);
     setUserName(name || '');
 
-    // Load user's orders
-    const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const userOrders = allOrders.filter(order => order.userEmail === email);
-    setOrders(userOrders);
+    // Load user's orders from database
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`/api/orders/${email}`);
+        if (response.ok) {
+          const userOrders = await response.json();
+          setOrders(userOrders);
+        } else {
+          console.error('Failed to fetch orders');
+          setOrders([]);
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setOrders([]);
+      }
+    };
+
+    fetchOrders();
   }, [navigate]);
 
   const getStatusIcon = (status) => {

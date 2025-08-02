@@ -5,6 +5,7 @@ const User = require('./models/User');
 const Product = require('./models/Product');
 const Banner = require('./models/Banner');
 const Offer = require('./models/Offers');
+const Order = require('./models/Order');
 
 
 const app = express();
@@ -261,5 +262,86 @@ app.get('/api/users/:email/coupons', async (req, res) => {
     res.json(coupons);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch coupons' });
+  }
+});
+
+// GET /api/orders - Get all orders (for staff panel)
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ orderDate: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error('❌ Error fetching orders:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/orders - Create new order
+app.post('/api/orders', async (req, res) => {
+  try {
+    const {
+      userEmail,
+      userName,
+      items,
+      total,
+      discount,
+      shippingAddress,
+      paymentMethod
+    } = req.body;
+
+    // Generate unique order ID
+    const orderId = 'ORD' + Date.now() + Math.floor(Math.random() * 1000);
+
+    const order = new Order({
+      id: orderId,
+      userEmail,
+      userName,
+      items,
+      total,
+      discount: discount || 0,
+      shippingAddress,
+      paymentMethod: paymentMethod || 'Credit Card'
+    });
+
+    await order.save();
+    res.status(201).json({ message: 'Order created successfully', orderId });
+  } catch (err) {
+    console.error('❌ Error creating order:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/orders/:userEmail - Get orders for specific user
+app.get('/api/orders/:userEmail', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+    const orders = await Order.find({ userEmail }).sort({ orderDate: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error('❌ Error fetching user orders:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PUT /api/orders/:orderId/status - Update order status
+app.put('/api/orders/:orderId/status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findOneAndUpdate(
+      { id: orderId },
+      { status },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json({ message: 'Order status updated successfully', order });
+  } catch (err) {
+    console.error('❌ Error updating order status:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });

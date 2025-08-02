@@ -155,33 +155,39 @@ const Checkout = () => {
       localStorage.removeItem('cart');
       setCart([]);
 
-      // Save order to localStorage (in a real app, this would go to the database)
-      const order = {
-        id: newOrderId,
+      // Save order to database
+      const orderData = {
         userEmail: userEmail,
+        userName: userName,
         items: cart,
         total: finalTotal,
         discount: discount,
-        appliedCoupon: appliedCoupon,
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
           address: formData.address,
           city: formData.city,
           state: formData.state,
           zipCode: formData.zipCode,
           country: formData.country
         },
-        paymentMethod: formData.paymentMethod,
-        orderDate: new Date().toISOString(),
-        status: 'Processing'
+        paymentMethod: formData.paymentMethod
       };
 
-      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      existingOrders.push(order);
-      localStorage.setItem('orders', JSON.stringify(existingOrders));
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save order to database');
+      }
+
+      const result = await response.json();
+      setOrderId(result.orderId);
 
       setOrderPlaced(true);
     } catch (error) {
