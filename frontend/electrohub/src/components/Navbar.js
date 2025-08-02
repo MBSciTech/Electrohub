@@ -61,15 +61,7 @@ const Navbar = ({ cartCount = 0 }) => {
             <li className="nav-item">
               <Link className="nav-link" to="/shop">Shop</Link>
             </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#projects">Projects</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#tutorials">Tutorials</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#about">About</a>
-            </li>
+            
             
             {/* Show different content based on login status */}
             {isLoggedIn ? (

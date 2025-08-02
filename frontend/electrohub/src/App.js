@@ -11,6 +11,16 @@
   import ProductPage from './components/ProductPage';
   import Profile from './components/Profile';
   import Orders from './components/Orders';
+  import ContactUs from './components/ContactUs';
+  import HelpCenter from './components/HelpCenter';
+  import ShippingInfo from './components/ShippingInfo';
+  import Returns from './components/Returns';
+  import Warranty from './components/Warranty';
+  import FAQ from './components/FAQ';
+  import PrivacyPolicy from './components/PrivacyPolicy';
+  import TermsOfService from './components/TermsOfService';
+  import CookiePolicy from './components/CookiePolicy';
+  import Sitemap from './components/Sitemap';
   import 'bootstrap/dist/css/bootstrap.min.css';
   import 'bootstrap/dist/js/bootstrap.bundle.min.js';
   import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -36,6 +46,16 @@
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/shipping" element={<ShippingInfo />} />
+          <Route path="/returns" element={<Returns />} />
+          <Route path="/warranty" element={<Warranty />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="/sitemap" element={<Sitemap />} />
         </Routes>
       </Router> 
     );
